@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: Colors.grey[100],
-      drawer: buildDrawerHeader(),
+      drawer: Drawer(child: buildDrawerHeader(context)),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     crossAxisCount: 2,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 16,
-                    childAspectRatio: 0.72,
+                    childAspectRatio: 0.68,
                   ),
                   itemBuilder: (context, index) {
                     final product = filteredProducts[index];
@@ -280,73 +280,78 @@ class ProductCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) => ProductDetailScreen(
-                              product: product,
-                              thumbnails: [
-                                Thumbnail(
-                                  id: 1,
-                                  productId: product.id!,
-                                  imageUrl: 'assets/images/mock1.jpg',
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => ProductDetailScreen(
+                                  product: product,
+                                  thumbnails: [
+                                    Thumbnail(
+                                      id: 1,
+                                      productId: product.id!,
+                                      imageUrl: 'assets/images/mock1.jpg',
+                                    ),
+                                    Thumbnail(
+                                      id: 2,
+                                      productId: product.id!,
+                                      imageUrl: 'assets/images/mock2.jpg',
+                                    ),
+                                  ],
+                                  attributeValues: [
+                                    ProductAttributeValue(
+                                      id: 1,
+                                      productId: product.id!,
+                                      attributeId: 1,
+                                      value: '42.5',
+                                    ),
+                                    ProductAttributeValue(
+                                      id: 2,
+                                      productId: product.id!,
+                                      attributeId: 2,
+                                      value: '12.0',
+                                    ),
+                                  ],
+                                  attributes: [
+                                    WatchAttribute(
+                                      attributeId: 1,
+                                      name: 'bandLength',
+                                      dataType: 'double',
+                                      quantity: 50,
+                                    ),
+                                    WatchAttribute(
+                                      attributeId: 2,
+                                      name: 'thickness',
+                                      dataType: 'double',
+                                      quantity: 50,
+                                    ),
+                                  ],
                                 ),
-                                Thumbnail(
-                                  id: 2,
-                                  productId: product.id!,
-                                  imageUrl: 'assets/images/mock2.jpg',
-                                ),
-                              ],
-                              attributeValues: [
-                                ProductAttributeValue(
-                                  id: 1,
-                                  productId: product.id!,
-                                  attributeId: 1,
-                                  value: '42.5',
-                                ),
-                                ProductAttributeValue(
-                                  id: 2,
-                                  productId: product.id!,
-                                  attributeId: 2,
-                                  value: '12.0',
-                                ),
-                              ],
-                              attributes: [
-                                WatchAttribute(
-                                  attributeId: 1,
-                                  name: 'bandLength',
-                                  dataType: 'double',
-                                  quantity: 50,
-                                ),
-                                WatchAttribute(
-                                  attributeId: 2,
-                                  name: 'thickness',
-                                  dataType: 'double',
-                                  quantity: 50,
-                                ),
-                              ],
-                            ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.shade400,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        elevation: 2,
                       ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red.shade400,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                      child: const Text(
+                        'Xem chi tiết',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                      ),
                     ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    elevation: 2,
-                  ),
-                  child: const Text(
-                    'Xem chi tiết',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                   ),
                 ),
               ],

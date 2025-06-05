@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:watchstore/models/data/database_helper.dart';
 import '../models/data/product.dart';
 
 class ProductController extends ChangeNotifier {
-  Database? _db;
+  Database _db = await DatabaseHelper().database;
   final List<Product> _products = [];
 
   List<Product> get products => List.unmodifiable(_products);
@@ -97,4 +98,13 @@ class ProductController extends ChangeNotifier {
 
   List<Product> get lowStockProducts =>
       _products.where((p) => p.quantity <= 3).toList();
+
+  Future<Product?> getProductById(int productId) async {
+    final result = await _db.query ('product', where: 'id = ?', whereArgs: [productId]);
+      if (result.isNotEmpty) {
+      return Product.fromMap(result.first);
+    } else {
+      return null;
+    }
+  }
 }

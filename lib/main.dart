@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:watchstore/models/data/database_helper.dart';
 import 'package:watchstore/screens/home_screen.dart';
+import 'package:watchstore/screens/product_detail_screen.dart';
 import 'controllers/product_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // final databaseHelper = DatabaseHelper();
-  // await databaseHelper.database;
+  final databaseHelper = DatabaseHelper();
+  await databaseHelper.database;
 
    runApp(
     MultiProvider(
@@ -29,6 +31,11 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(primarySwatch: Colors.blue),
       home: HomeScreen(),
       debugShowCheckedModeBanner: false,
+      // initialRoute: '/',
+      // routes: {
+      //   '/': (context) => HomeScreen(),
+      //   '/productDetail': (context) => ProductDetailScreen(),
+      // },
     );
   }
 }
