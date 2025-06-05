@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:watchstore/models/data/brand.dart';
 import 'package:watchstore/models/data/database_helper.dart';
+import 'package:watchstore/models/data/product.dart';
+import 'package:watchstore/screens/home_screen.dart';
 import 'controllers/product_controller.dart';
 import '../screens/admin_home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final databaseHelper = DatabaseHelper();
-  await databaseHelper.database;
+  // final databaseHelper = DatabaseHelper();
+  // await databaseHelper.database;
 
    runApp(
     MultiProvider(
@@ -28,7 +31,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Admin Watch Store',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: AdminHomeScreen(),
+      home: HomeScreen(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
