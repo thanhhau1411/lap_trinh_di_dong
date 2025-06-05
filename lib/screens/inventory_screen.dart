@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../controllers/product_controller.dart';
-import '../models/product.dart';
+import '../models/data/product.dart';
 import 'product_edit_screen.dart';
 
 class InventoryScreen extends StatefulWidget {

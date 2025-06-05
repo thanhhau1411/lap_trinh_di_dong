@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart'; // Thêm package chọn ảnh
 import 'package:provider/provider.dart';
 
-import '../models/product.dart';
+import '../models/data/product.dart';
 import '../controllers/product_controller.dart';
 
 class ProductEditScreen extends StatefulWidget {
@@ -65,6 +65,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
         price: _price,
         quantity: _quantity,
         imageUrl: imageUrl,
+        brandId: 0
       );
 
       final productController = Provider.of<ProductController>(

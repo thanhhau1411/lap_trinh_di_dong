@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import '../models/product.dart';
+import '../models/data/product.dart';
 
 class ProductController extends ChangeNotifier {
   Database? _db;
@@ -76,6 +76,7 @@ class ProductController extends ChangeNotifier {
             price: (map['price'] as num).toDouble(),
             quantity: map['quantity'] as int,
             imageUrl: map['imageUrl'] as String,
+            brandId: (map['brandId'] is int) ? map['brandId'] as int : 0
           ),
         ),
       );

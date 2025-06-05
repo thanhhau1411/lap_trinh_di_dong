@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:watchstore/models/data/database_helper.dart';
 import 'controllers/product_controller.dart';
 import '../screens/admin_home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final productController = ProductController();
-  await productController.initDb();
+  final databaseHelper = DatabaseHelper();
+  await databaseHelper.database;
 
-  runApp(
-    ChangeNotifierProvider<ProductController>.value(
-      value: productController,
+   runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ProductController()),
+        // Thêm các Provider khác tại đây nếu có
+        // ChangeNotifierProvider(create: (_) => OrderController()),
+      ],
       child: MyApp(),
     ),
   );
