@@ -65,6 +65,7 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         productId INTEGER,
         attributeId INTEGER,
+        value TEXT NOT NULL,
         PRIMARY KEY (id),
         FOREIGN KEY (productId) REFERENCES Product(id) ON DELETE CASCADE,
         FOREIGN KEY (attributeId) REFERENCES WatchAttribute(attributeId) ON DELETE CASCADE
