@@ -1,11 +1,11 @@
 class ImportReceiptDetail {
-  final int id;
+  final int? id;
   final int importReceiptId;   // Liên kết đến phiếu nhập
   final int productId;        // Mã đồng hồ
   final int quantity;
 
   ImportReceiptDetail({
-    required this.id,
+    this.id,
     required this.importReceiptId,
     required this.productId,
     required this.quantity,

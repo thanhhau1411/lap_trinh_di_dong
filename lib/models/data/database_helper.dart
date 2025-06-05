@@ -17,11 +17,7 @@ class DatabaseHelper {
 
   Future<Database> _initDatabase() async {
     final path = join(await getDatabasesPath(), 'watch_store.db');
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _onCreate,
-    );
+    return await openDatabase(path, version: 1, onCreate: _onCreate);
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -44,7 +40,7 @@ class DatabaseHelper {
 
     await db.execute('''
       CREATE TABLE Product (
-        id TEXT PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         description TEXT NOT NULL,
         price REAL NOT NULL,
@@ -56,31 +52,31 @@ class DatabaseHelper {
     ''');
 
     await db.execute('''
-      CREATE TABLE WatchSize (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        caseDiameter REAL,
-        thickness REAL,
-        bandWidth REAL,
-        bandLength REAL
+      CREATE TABLE WatchAttribute (
+        attributeId INTEGER PRIMARY KEY AUTOINCREMENT,
+        name Text NOT NULL,
+        dataType Text NOT NULL,
+        quantity INTEGER NOT NULL
       );
     ''');
 
     await db.execute('''
-      CREATE TABLE ProductSize (
-        productId TEXT,
-        sizeId INTEGER,
-        PRIMARY KEY (productId, sizeId),
-        FOREIGN KEY (productId) REFERENCES Product(id),
-        FOREIGN KEY (sizeId) REFERENCES WatchSize(id)
+      CREATE TABLE ProductAttributeValue (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        productId INTEGER,
+        attributeId INTEGER,
+        PRIMARY KEY (id),
+        FOREIGN KEY (productId) REFERENCES Product(id) ON DELETE CASCADE,
+        FOREIGN KEY (attributeId) REFERENCES WatchAttribute(attributeId) ON DELETE CASCADE
       );
     ''');
 
     await db.execute('''
       CREATE TABLE Thumbnail (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        productId TEXT NOT NULL,
+        productId INTEGER NOT NULL,
         imageUrl TEXT NOT NULL,
-        FOREIGN KEY (productId) REFERENCES Product(id)
+        FOREIGN KEY (productId) REFERENCES Product(id) ON DELETE CASCADE
       );
     ''');
 
@@ -99,9 +95,9 @@ class DatabaseHelper {
       CREATE TABLE OrderDetail (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         orderId INTEGER NOT NULL,
-        productId TEXT NOT NULL,
-        FOREIGN KEY (orderId) REFERENCES "Order"(id),
-        FOREIGN KEY (productId) REFERENCES Product(id)
+        productId INTEGER NOT NULL,
+        FOREIGN KEY (orderId) REFERENCES "Order"(id) ON DELETE CASCADE,
+        FOREIGN KEY (productId) REFERENCES Product(id) ON DELETE CASCADE
       );
     ''');
 
@@ -112,7 +108,7 @@ class DatabaseHelper {
         issuedDate TEXT NOT NULL,
         expiryDate TEXT NOT NULL,
         notes TEXT,
-        FOREIGN KEY (orderDetail) REFERENCES OrderDetail(id)
+        FOREIGN KEY (orderDetail) REFERENCES OrderDetail(id) ON DELETE CASCADE
       );
     ''');
 
@@ -132,9 +128,27 @@ class DatabaseHelper {
         importReceiptId INTEGER NOT NULL,
         productId TEXT NOT NULL,
         quantity INTEGER NOT NULL,
-        FOREIGN KEY (importReceiptId) REFERENCES ImportReceipt(id),
-        FOREIGN KEY (productId) REFERENCES Product(id)
+        FOREIGN KEY (importReceiptId) REFERENCES ImportReceipt(id) ON DELETE CASCADE,
+        FOREIGN KEY (productId) REFERENCES Product(id) ON DELETE CASCADE
       );
     ''');
+
+    await db.insert('WatchAttribute', {
+      'name': 'bandLength',
+      'dataType': 'double',
+      'quantity': 50,
+    });
+
+    await db.insert('WatchAttribute', {
+      'name': 'thickness',
+      'dataType': 'double',
+      'quantity': 50,
+    });
+
+    await db.insert('WatchAttribute', {
+      'name': 'caseDiameter',
+      'dataType': 'double',
+      'quantity': 50,
+    });
   }
 }

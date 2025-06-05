@@ -1,12 +1,12 @@
 class ImportReceipt {
-  final int id;                 // Mã phiếu nhập
+  final int? id;                 // Mã phiếu nhập
   final DateTime importDate;       // Ngày nhập
   final String supplierName;       // Tên nhà cung cấp
   final String staffName;          // Nhân viên thực hiện
   final String? notes;             // Ghi chú
 
   ImportReceipt({
-    required this.id,
+    this.id,
     required this.importDate,
     required this.supplierName,
     required this.staffName,

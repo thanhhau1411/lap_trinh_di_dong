@@ -1,12 +1,12 @@
 class WarrantyCard {
-  final int id;               // Mã phiếu bảo hành
+  final int? id;               // Mã phiếu bảo hành
   final int orderDetail;      // mã chi tiết đơn
   final DateTime issuedDate;     // Ngày cấp
   final DateTime expiryDate;     // Ngày hết hạn
   final String? notes;           // Ghi chú thêm
 
   WarrantyCard({
-    required this.id,
+    this.id,
     required this.orderDetail,
     required this.issuedDate,
     required this.expiryDate,

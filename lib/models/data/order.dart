@@ -1,12 +1,12 @@
 class Order {
-  final int id;
+  final int? id;
   final DateTime orderDate;
   final DateTime deliveryDate;
   final String? status;
   final int customerId;
 
   Order({
-    required this.id,
+    this.id,
     required this.orderDate,
     required this.deliveryDate,
     this.status,

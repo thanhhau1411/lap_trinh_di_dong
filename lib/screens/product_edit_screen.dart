@@ -59,7 +59,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
       final imageUrl = _imageFile?.path ?? widget.product?.imageUrl ?? '';
 
       final product = Product(
-        id: widget.product?.id ?? DateTime.now().toString(),
+        id: widget.product!.id,
         name: _name,
         description: _description,
         price: _price,

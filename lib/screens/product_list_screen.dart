@@ -52,7 +52,7 @@ class ProductListScreen extends StatelessWidget {
                 IconButton(
                   icon: Icon(Icons.delete),
                   onPressed: () {
-                    productController.deleteProduct(product.id);
+                    productController.deleteProduct(product.id!);
                   },
                 ),
               ],

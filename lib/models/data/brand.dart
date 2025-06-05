@@ -1,8 +1,8 @@
 class Brand {
-  late int id;
+  int? id;
   late String name;
   Brand({
-    required this.id,
+    this.id,
     required this.name
   });
 

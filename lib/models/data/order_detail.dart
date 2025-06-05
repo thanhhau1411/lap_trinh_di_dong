@@ -1,10 +1,10 @@
 class OrderDetail {
-  final int id;
+  final int? id;
   final int orderId;
   final int productId; 
 
   OrderDetail({
-    required this.id,
+    this.id,
     required this.orderId,
     required this.productId,
   });

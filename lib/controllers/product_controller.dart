@@ -9,58 +9,6 @@ class ProductController extends ChangeNotifier {
 
   List<Product> get products => List.unmodifiable(_products);
 
-  Future<void> initDb() async {
-    try {
-      final path = join(await getDatabasesPath(), 'inventory.db');
-      _db = await openDatabase(
-        path,
-        version: 1,
-        onCreate: (db, version) async {
-          await db.execute('''
-            CREATE TABLE products (
-              id TEXT PRIMARY KEY,
-              name TEXT,
-              description TEXT,
-              price REAL,
-              quantity INTEGER,
-              imageUrl TEXT
-            )
-          ''');
-
-          // Thêm sản phẩm mẫu
-          await db.insert('products', {
-            'id': 'SP001',
-            'name': 'Rolex Submariner',
-            'description': 'Luxury dive watch',
-            'price': 15000,
-            'quantity': 10,
-            'imageUrl': 'assets/images/product1_1.png',
-          });
-          await db.insert('products', {
-            'id': 'SP002',
-            'name': 'Omega Seamaster',
-            'description': 'Classic diving watch',
-            'price': 12000,
-            'quantity': 5,
-            'imageUrl': 'assets/images/product1_2.png',
-          });
-          await db.insert('products', {
-            'id': 'SP003',
-            'name': 'Casio G-Shock',
-            'description': 'Durable sport watch',
-            'price': 200,
-            'quantity': 20,
-            'imageUrl': 'assets/images/product1_3.png',
-          });
-        },
-      );
-
-      await loadProductsFromDb();
-    } catch (e) {
-      debugPrint('Error initializing database: $e');
-    }
-  }
-
   Future<void> loadProductsFromDb() async {
     if (_db == null) return;
 
@@ -70,7 +18,7 @@ class ProductController extends ChangeNotifier {
       _products.addAll(
         maps.map(
           (map) => Product(
-            id: map['id'] as String,
+            id: map['id'] as int,
             name: map['name'] as String,
             description: map['description'] as String,
             price: (map['price'] as num).toDouble(),
@@ -119,7 +67,7 @@ class ProductController extends ChangeNotifier {
     }
   }
 
-  Future<void> deleteProduct(String id) async {
+  Future<void> deleteProduct(int id) async {
     if (_db == null) return;
 
     try {

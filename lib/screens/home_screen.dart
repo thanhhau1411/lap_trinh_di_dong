@@ -23,7 +23,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   final List<Product> allProducts = [
     Product(
-      id: '1',
+      id: 1,
       name: 'Apple Watch',
       description: 'Series 7',
       price: 799,
@@ -32,32 +32,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       brandId: 1,
     ),
     Product(
-      id: '2',
+      id: 2,
       name: 'Galaxy Watch',
       description: 'Series 5',
       price: 599,
       quantity: 5,
       imageUrl: 'https://i.imgur.com/ZQZSWrt.png',
       brandId: 1,
-    ),
-    Product(
-      id: '3',
-      name: 'Mi Watch',
-      description: 'Series 6',
-      price: 299,
-      quantity: 5,
-      imageUrl: 'https://i.imgur.com/7fYhKNS.png',
-      brandId: 1,
-    ),
-    Product(
-      id: '4',
-      name: 'Seiko Watch',
-      description: 'Blue Dial',
-      quantity: 5,
-      price: 199,
-      imageUrl: 'https://i.imgur.com/JDcHTGI.png',
-      brandId: 4,
-    ),
+    )
   ];
 
   late AnimationController _animationController;
@@ -155,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   return GestureDetector(
                     onTap: () {
                       setState(() {
-                        selectedBrandId = brand.id;
+                        selectedBrandId = brand.id!;
                         _animationController.reset();
                         _animationController.forward();
                       });

@@ -1,11 +1,11 @@
 class Customer {
-  late int id;
+  late int? id;
   late String fullName;
   late String? email;
   late String phoneNumer;
   late String address;
   Customer({
-    required this.id,
+    this.id,
     required this.fullName,
     this.email,
     required this.phoneNumer,

@@ -1,10 +1,10 @@
 class Thumbnail {
-  final int id;           // Mã ảnh thumbnail
+  final int? id;           // Mã ảnh thumbnail
   final int productId;    // Mã sản phẩm liên kết
   final String imageUrl;     // Đường dẫn ảnh
 
   Thumbnail({
-    required this.id,
+    this.id,
     required this.productId,
     required this.imageUrl,
   });
