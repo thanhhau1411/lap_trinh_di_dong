@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:watchstore/models/data/brand.dart';
 import 'package:watchstore/models/data/product.dart';
+import 'package:watchstore/models/data/product_attribute_value.dart';
+import 'package:watchstore/models/data/thumbnail.dart';
+import 'package:watchstore/models/data/watch_attribute.dart';
+import 'package:watchstore/screens/product_detail_screen.dart';
 import 'package:watchstore/wiget/drawer_header.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -39,7 +43,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       quantity: 5,
       imageUrl: 'https://i.imgur.com/ZQZSWrt.png',
       brandId: 1,
-    )
+    ),
   ];
 
   late AnimationController _animationController;
@@ -277,7 +281,57 @@ class ProductCard extends StatelessWidget {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => ProductDetailScreen(
+                              product: product,
+                              thumbnails: [
+                                Thumbnail(
+                                  id: 1,
+                                  productId: product.id!,
+                                  imageUrl: 'assets/images/mock1.jpg',
+                                ),
+                                Thumbnail(
+                                  id: 2,
+                                  productId: product.id!,
+                                  imageUrl: 'assets/images/mock2.jpg',
+                                ),
+                              ],
+                              attributeValues: [
+                                ProductAttributeValue(
+                                  id: 1,
+                                  productId: product.id!,
+                                  attributeId: 1,
+                                  value: '42.5',
+                                ),
+                                ProductAttributeValue(
+                                  id: 2,
+                                  productId: product.id!,
+                                  attributeId: 2,
+                                  value: '12.0',
+                                ),
+                              ],
+                              attributes: [
+                                WatchAttribute(
+                                  attributeId: 1,
+                                  name: 'bandLength',
+                                  dataType: 'double',
+                                  quantity: 50,
+                                ),
+                                WatchAttribute(
+                                  attributeId: 2,
+                                  name: 'thickness',
+                                  dataType: 'double',
+                                  quantity: 50,
+                                ),
+                              ],
+                            ),
+                      ),
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red.shade400,
                     foregroundColor: Colors.white,
