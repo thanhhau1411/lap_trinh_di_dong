@@ -1,5 +1,8 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:watchstore/models/data/product.dart';
+import 'package:watchstore/models/data/product_attribute_value.dart';
+import 'package:watchstore/models/data/watch_attribute.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -9,18 +12,24 @@ class DatabaseHelper {
 
   DatabaseHelper._internal();
 
-  Future<Database> get database async {
+  static Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await _initDatabase();
     return _database!;
   }
 
-  Future<Database> _initDatabase() async {
+  static Future<Database> _initDatabase() async {
     final path = join(await getDatabasesPath(), 'watch_store.db');
     return await openDatabase(path, version: 1, onCreate: _onCreate);
   }
 
-  Future<void> _onCreate(Database db, int version) async {
+  static Future<void> deleteDatabaseFile() async {
+    final path = join(await getDatabasesPath(), 'watch_store.db');
+    await deleteDatabase(path);
+    print("🔥 Database deleted");
+  }
+
+  static Future<void> _onCreate(Database db, int version) async {
     await db.execute('''
       CREATE TABLE Brand (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -66,7 +75,6 @@ class DatabaseHelper {
         productId INTEGER,
         attributeId INTEGER,
         value TEXT NOT NULL,
-        PRIMARY KEY (id),
         FOREIGN KEY (productId) REFERENCES Product(id) ON DELETE CASCADE,
         FOREIGN KEY (attributeId) REFERENCES WatchAttribute(attributeId) ON DELETE CASCADE
       );
@@ -134,6 +142,17 @@ class DatabaseHelper {
       );
     ''');
 
+     await db.execute('''
+      CREATE TABLE Account (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL,
+        password TEXT NOT NULL,
+        customerId INTEGER,
+        FOREIGN KEY (customerId) REFERENCES Cutomer(id) ON DELETE CASCADE
+      );
+    ''');
+
+    // insert
     await db.insert('WatchAttribute', {
       'name': 'bandLength',
       'dataType': 'double',
@@ -151,5 +170,89 @@ class DatabaseHelper {
       'dataType': 'double',
       'quantity': 50,
     });
+
+    await db.insert('Brand', {'name': 'Smart watch'});
+    await db.insert('Brand', {'name': 'Casio'});
+    await db.insert('Brand', {'name': 'Tissot'});
+
+    final products = [
+      Product(
+        name: 'Apple Watch',
+        description: 'Series 7',
+        price: 799,
+        quantity: 5,
+        imageUrl: 'https://picsum.photos/200/300',
+        brandId: 1,
+      ),
+      Product(
+        name: 'Galaxy Watch',
+        description: 'Series 5',
+        price: 599,
+        quantity: 5,
+        imageUrl: 'https://picsum.photos/200/300',
+        brandId: 1,
+      ),
+      Product(
+        name: 'Galaxy Watch',
+        description: 'Series 5',
+        price: 599,
+        quantity: 5,
+        imageUrl: 'https://picsum.photos/200/300',
+        brandId: 2,
+      ),
+      Product(
+        name: 'Galaxy Watch',
+        description: 'Series 5',
+        price: 599,
+        quantity: 5,
+        imageUrl: 'https://picsum.photos/200/300',
+        brandId: 3,
+      ),
+    ];
+
+    final batch = db.batch();
+    for (var product in products) {
+      batch.insert('Product', {
+        'name': product.name,
+        'description': product.description,
+        'price': product.price,
+        'quantity': product.quantity,
+        'imageUrl': product.imageUrl,
+        'brandId': product.brandId,
+      });
+    }
+    await batch.commit(noResult: true);
+
+    final attributes = [
+      WatchAttribute(name: 'Chiều dài dây đeo', dataType: 'double', quantity: 50),
+      WatchAttribute(name: 'Đường kính mặt đồng hồ', dataType: 'double', quantity: 50),
+    ];
+
+    final attributeBatch = db.batch();
+    for (var attr in attributes) {
+      attributeBatch.insert('WatchAttribute', {
+        'name': attr.name,
+        'dataType': attr.dataType,
+        'quantity': attr.quantity,
+      });
+    }
+    await attributeBatch.commit(noResult: true);
+
+    final attributeValues = [
+      ProductAttributeValue(productId: 1, attributeId: 3, value: '42.5'),
+      ProductAttributeValue(productId: 1, attributeId: 4, value: '12.0'),
+      ProductAttributeValue(productId: 2, attributeId: 3, value: '44.2'),
+    ];
+
+    final valueBatch = db.batch();
+    for (var val in attributeValues) {
+      valueBatch.insert('ProductAttributeValue', {
+        'productId': val.productId,
+        'attributeId': val.attributeId,
+        'value':
+            val.value.toString(), // đảm bảo lưu chuỗi (hoặc convert nếu cần)
+      });
+    }
+    await valueBatch.commit(noResult: true);
   }
 }

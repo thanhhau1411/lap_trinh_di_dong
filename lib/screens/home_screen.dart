@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:watchstore/controllers/auth_controller.dart';
+import 'package:watchstore/controllers/brand_controller.dart';
+import 'package:watchstore/controllers/product_controller.dart';
 import 'package:watchstore/models/data/brand.dart';
 import 'package:watchstore/models/data/product.dart';
 import 'package:watchstore/models/data/product_attribute_value.dart';
@@ -16,52 +20,46 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _brandController = BrandController();
+  final _productController = ProductController();
   int selectedBrandId = 1;
 
-  final List<Brand> brands = [
-    Brand(id: 1, name: "Smart watch"),
-    Brand(id: 2, name: "Casio"),
-    Brand(id: 3, name: "Tissot"),
-    Brand(id: 4, name: "Seiko"),
-  ];
+  List<Brand> brands = [];
 
-  final List<Product> allProducts = [
-    Product(
-      id: 1,
-      name: 'Apple Watch',
-      description: 'Series 7',
-      price: 799,
-      quantity: 5,
-      imageUrl: 'https://i.imgur.com/6lSn8cN.png',
-      brandId: 1,
-    ),
-    Product(
-      id: 2,
-      name: 'Galaxy Watch',
-      description: 'Series 5',
-      price: 599,
-      quantity: 5,
-      imageUrl: 'https://i.imgur.com/ZQZSWrt.png',
-      brandId: 1,
-    ),
-  ];
+  List<Product> allProducts = [];
 
   late AnimationController _animationController;
 
   @override
   void initState() {
+    super.initState();
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
     _animationController.forward();
-    super.initState();
+    loadBrands();
+    loadProducts();
   }
 
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
+  }
+
+  Future<void> loadBrands() async {
+    final loadedBrands = await _brandController.loadAll();
+    setState(() {
+      brands = loadedBrands;
+    });
+  }
+
+  Future<void> loadProducts() async {
+    final loadedProducts = await _productController.getAll();
+    setState(() {
+      allProducts = loadedProducts;
+    });
   }
 
   @override
@@ -74,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: Colors.grey[100],
-      drawer: Drawer(child: buildDrawerHeader(context)),
+      drawer: Drawer(child: buildDrawerHeader(context, context.read<AuthController>().customerInfo)),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   final brand = brands[index];
                   final isSelected = brand.id == selectedBrandId;
                   return GestureDetector(
-                    onTap: () {
+                    onTap: () async {
                       setState(() {
                         selectedBrandId = brand.id!;
                         _animationController.reset();
@@ -211,11 +209,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
 class ProductCard extends StatelessWidget {
   final Product product;
-
-  const ProductCard({super.key, required this.product});
+  late ProductController _productController;
+  ProductCard({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
+    _productController = context.watch<ProductController>();
     return Container(
       decoration: BoxDecoration(
         color: Colors.red.shade100,
@@ -284,7 +283,35 @@ class ProductCard extends StatelessWidget {
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
+                        final productId = product.id;
+                        if (productId == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("product id null")));
+                          return;
+                        }
+
+                        final watchAttribute =
+                            await _productController.getWatchAttribute(
+                              productId,
+                            ) ??
+                            [];
+                        if(watchAttribute.isEmpty) {
+                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("watchAttribute is empty")));
+                        }
+                        final futures =
+                            watchAttribute.map((attr) {
+                              final attrId = attr.attributeId;
+                              if (attrId == null) return Future.value(null);
+                              return _productController.getAttributeValue(
+                                productId,
+                                attrId,
+                              );
+                            }).toList();
+
+                        final attributeValues = await Future.wait(futures);
+                         if(attributeValues.isEmpty) {
+                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("attributeValues is empty")));
+                        }
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -294,47 +321,25 @@ class ProductCard extends StatelessWidget {
                                   thumbnails: [
                                     Thumbnail(
                                       id: 1,
-                                      productId: product.id!,
+                                      productId: productId,
                                       imageUrl: 'assets/images/mock1.jpg',
                                     ),
                                     Thumbnail(
                                       id: 2,
-                                      productId: product.id!,
+                                      productId: productId,
                                       imageUrl: 'assets/images/mock2.jpg',
                                     ),
                                   ],
-                                  attributeValues: [
-                                    ProductAttributeValue(
-                                      id: 1,
-                                      productId: product.id!,
-                                      attributeId: 1,
-                                      value: '42.5',
-                                    ),
-                                    ProductAttributeValue(
-                                      id: 2,
-                                      productId: product.id!,
-                                      attributeId: 2,
-                                      value: '12.0',
-                                    ),
-                                  ],
-                                  attributes: [
-                                    WatchAttribute(
-                                      attributeId: 1,
-                                      name: 'bandLength',
-                                      dataType: 'double',
-                                      quantity: 50,
-                                    ),
-                                    WatchAttribute(
-                                      attributeId: 2,
-                                      name: 'thickness',
-                                      dataType: 'double',
-                                      quantity: 50,
-                                    ),
-                                  ],
+                                  attributeValues:
+                                      attributeValues
+                                          .whereType<ProductAttributeValue>()
+                                          .toList(),
+                                  attributes: watchAttribute,
                                 ),
                           ),
                         );
                       },
+
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red.shade400,
                         foregroundColor: Colors.white,
@@ -349,7 +354,10 @@ class ProductCard extends StatelessWidget {
                       ),
                       child: const Text(
                         'Xem chi tiết',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   ),

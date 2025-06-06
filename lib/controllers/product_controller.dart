@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:watchstore/models/data/database_helper.dart';
+import 'package:watchstore/models/data/product_attribute_value.dart';
+import 'package:watchstore/models/data/watch_attribute.dart';
 import '../models/data/product.dart';
 
 class ProductController extends ChangeNotifier {
-  Database _db = await DatabaseHelper().database;
+  late Database _db;
   final List<Product> _products = [];
 
   List<Product> get products => List.unmodifiable(_products);
 
   Future<void> loadProductsFromDb() async {
+    _db = await DatabaseHelper.database;
     if (_db == null) return;
 
     try {
@@ -25,7 +28,7 @@ class ProductController extends ChangeNotifier {
             price: (map['price'] as num).toDouble(),
             quantity: map['quantity'] as int,
             imageUrl: map['imageUrl'] as String,
-            brandId: (map['brandId'] is int) ? map['brandId'] as int : 0
+            brandId: (map['brandId'] is int) ? map['brandId'] as int : 0,
           ),
         ),
       );
@@ -36,6 +39,7 @@ class ProductController extends ChangeNotifier {
   }
 
   Future<void> addProduct(Product product) async {
+    _db = await DatabaseHelper.database;
     if (_db == null) return;
 
     try {
@@ -48,6 +52,7 @@ class ProductController extends ChangeNotifier {
   }
 
   Future<void> updateProduct(Product updatedProduct) async {
+    _db = await DatabaseHelper.database;
     if (_db == null) return;
 
     try {
@@ -69,6 +74,7 @@ class ProductController extends ChangeNotifier {
   }
 
   Future<void> deleteProduct(int id) async {
+    _db = await DatabaseHelper.database;
     if (_db == null) return;
 
     try {
@@ -81,6 +87,7 @@ class ProductController extends ChangeNotifier {
   }
 
   Future<void> reduceInventory(String productId, int quantitySold) async {
+    _db = await DatabaseHelper.database;
     try {
       final product = _products.firstWhere(
         (p) => p.id == productId,
@@ -100,9 +107,82 @@ class ProductController extends ChangeNotifier {
       _products.where((p) => p.quantity <= 3).toList();
 
   Future<Product?> getProductById(int productId) async {
-    final result = await _db.query ('product', where: 'id = ?', whereArgs: [productId]);
-      if (result.isNotEmpty) {
+    _db = await DatabaseHelper.database;
+    final result = await _db.query(
+      'product',
+      where: 'id = ?',
+      whereArgs: [productId],
+    );
+    if (result.isNotEmpty) {
       return Product.fromMap(result.first);
+    } else {
+      return null;
+    }
+  }
+
+  Future<List<Product>> getProductByBrandId(int brandId) async {
+    _db = await DatabaseHelper.database;
+    final result = await _db.rawQuery(
+      '''select * 
+                                         from Product p 
+                                         join Brand b on b.id = p.brandId
+                                         where b.id = ?
+                                      ''',
+      [brandId],
+    );
+    if (result.isNotEmpty) {
+      return result.map((map) => Product.fromMap(map)).toList();
+    } else {
+      return <Product>[];
+    }
+  }
+
+  Future<List<Product>> getAll() async {
+    _db = await DatabaseHelper.database;
+    final result = await _db.query('Product');
+    if (result.isNotEmpty) {
+      return result.map((map) => Product.fromMap(map)).toList();
+    } else {
+      return <Product>[];
+    }
+  }
+
+  Future<List<WatchAttribute>?> getWatchAttribute(int productId) async {
+    final db = await DatabaseHelper.database;
+    final result = await db.rawQuery(
+      '''  select  wa.name, wa.dataType, wa.quantity
+                     from Product p 
+                     join ProductAttributeValue pav on pav.productId = p.id
+                     join WatchAttribute wa on wa.attributeId = pav.attributeId
+                     where p.id = ?
+                ''',
+      [productId],
+    );
+    if (result.isNotEmpty) {
+      return result.map((map) => WatchAttribute.fromMap(map)).toList();
+    } else {
+      return null;
+    }
+  }
+
+  Future<ProductAttributeValue?> getAttributeValue(
+    int productId,
+    int attributeId,
+  ) async {
+    final db = await DatabaseHelper.database;
+    final result = await db.rawQuery(
+      '''
+    SELECT pav.id, pav.productId, pav.attributeId, pav.value
+    FROM Product p 
+    JOIN ProductAttributeValue pav ON pav.productId = p.id
+    JOIN WatchAttribute wa ON wa.attributeId = pav.attributeId
+    WHERE p.id = ? AND wa.attributeId = ?
+    ''',
+      [productId, attributeId],
+    );
+
+    if (result.isNotEmpty) {
+      return ProductAttributeValue.fromMap(result.first);
     } else {
       return null;
     }

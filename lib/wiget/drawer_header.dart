@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:watchstore/models/data/customer.dart';
+import 'package:watchstore/screens/favorite_screen.dart';
 import 'package:watchstore/screens/home_screen.dart';
 
-Widget buildDrawerHeader(BuildContext context) {
+Widget buildDrawerHeader(BuildContext context, Customer? customerInfo) {
   return Column(
       children: [
         DrawerHeader(
@@ -9,14 +11,14 @@ Widget buildDrawerHeader(BuildContext context) {
             color: Colors.red.shade300,
           ),
           child: Row(
-            children: const [
+            children: [
               CircleAvatar(
                 radius: 30,
                 backgroundImage: NetworkImage('https://i.imgur.com/6lSn8cN.png'),
               ),
               SizedBox(width: 16),
               Text(
-                "Xin chào!",
+                customerInfo?.fullName ?? 'Empty',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 20,
@@ -26,10 +28,10 @@ Widget buildDrawerHeader(BuildContext context) {
           ),
         ),
         _buildDrawerItem(Icons.home, "Trang chủ", () { Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => HomeScreen()), (routes) => false);}),
-        _buildDrawerItem(Icons.shopping_cart, "Giỏ hàng", () {}),
-        _buildDrawerItem(Icons.favorite, "Yêu thích", () {}),
+        // _buildDrawerItem(Icons.shopping_cart, "Giỏ hàng", () {}),
+        _buildDrawerItem(Icons.favorite, "Yêu thích", () {Navigator.push(context, MaterialPageRoute(builder: (_) => FavoriteScreen()));}),
         _buildDrawerItem(Icons.receipt_long, "Đơn hàng", () {}),
-        _buildDrawerItem(Icons.settings, "Cài đặt", () {}),
+        // _buildDrawerItem(Icons.settings, "Cài đặt", () {}),
         const Spacer(),
         _buildDrawerItem(Icons.logout, "Đăng xuất", () {}),
       ]);

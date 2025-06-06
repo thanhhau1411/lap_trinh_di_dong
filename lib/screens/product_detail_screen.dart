@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:watchstore/Utils/favorite_manager.dart';
+import 'package:watchstore/controllers/auth_controller.dart';
 import 'package:watchstore/models/data/product.dart';
 import 'package:watchstore/models/data/thumbnail.dart';
 import 'package:watchstore/models/data/product_attribute_value.dart';
@@ -32,7 +34,29 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   void initState() {
     super.initState();
-    isFavorite = FavoriteManager().isFavorite(widget.product);
+    _loadFavoriteStatus();
+  }
+
+  void _loadFavoriteStatus() async {
+    final fav = await FavoriteManager().isFavorite(widget.product);
+    setState(() {
+      isFavorite = fav;
+    });
+  }
+
+  void _toggleFavorite() async {
+    await FavoriteManager().toggleFavorite(widget.product);
+    final fav = await FavoriteManager().isFavorite(widget.product);
+    setState(() {
+      isFavorite = fav;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(fav ? 'Đã thêm vào yêu thích' : 'Đã xóa khỏi yêu thích'),
+        duration: const Duration(seconds: 1),
+      ),
+    );
   }
 
   @override
@@ -41,188 +65,222 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         widget.attributes.map((attr) {
           final value = widget.attributeValues.firstWhere(
             (val) => val.attributeId == attr.attributeId,
-            orElse:
-                () => ProductAttributeValue(
-                  productId: widget.product.id!,
-                  attributeId: attr.attributeId!,
-                  value: "N/A",
-                ),
+            orElse: () {
+              final safeProductId = widget.product.id ?? -1;
+              final safeAttrId = attr.attributeId ?? -1;
+              return ProductAttributeValue(
+                productId: safeProductId,
+                attributeId: safeAttrId,
+                value: "N/A",
+              );
+            },
           );
-          return "${attr.name}: ${value.value}";
+          final attrName = attr.name ?? "Thuộc tính không rõ";
+          return "$attrName: ${value.value}";
         }).toList();
 
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Text(widget.product.name, style: TextStyle(color: Colors.white)),
+        title: Text(
+          widget.product.name,
+          style: const TextStyle(color: Colors.white),
+        ),
         backgroundColor: Colors.red.shade400,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
             onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
-            icon: Icon(Icons.menu),
+            icon: const Icon(Icons.menu),
           ),
         ],
       ),
-      endDrawer: Drawer(child: buildDrawerHeader(context)),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Main image with favorite button
-            Stack(
-              children: [
-                Center(
-                  child: Image.network(
-                    widget.product.imageUrl,
-                    height: 200,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: IconButton(
-                    icon: Icon(
-                      isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: isFavorite ? Colors.pink : Colors.grey,
-                      size: 28,
-                    ),
-                    onPressed: () async {
-                      await FavoriteManager().toggleFavorite(widget.product);
-                      setState(() {
-                        isFavorite = FavoriteManager().isFavorite(
-                          widget.product,
-                        );
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            isFavorite
-                                ? 'Đã thêm vào yêu thích'
-                                : 'Đã xóa khỏi yêu thích',
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 10),
-
-            // Thumbnail list
-            if (widget.thumbnails.isNotEmpty)
-              SizedBox(
-                height: 80,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: widget.thumbnails.length,
-                  itemBuilder: (context, index) {
-                    return Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          widget.thumbnails[index].imageUrl,
-                          width: 80,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-
-            const SizedBox(height: 16),
-
-            Text(
-              widget.product.name,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              widget.product.description,
-              style: const TextStyle(color: Colors.black54, fontSize: 16),
-            ),
-
-            const SizedBox(height: 16),
-
-            Text(
-              "\$${widget.product.price.toStringAsFixed(2)}",
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.red,
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Attributes
-            if (mainAttributes.isNotEmpty)
-              Column(
+      endDrawer: Drawer(child: buildDrawerHeader(context, context.read<AuthController>().customerInfo!)),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Thông số kỹ thuật",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 8),
-                  ...mainAttributes.map((attr) => Text("- $attr")),
-                ],
-              ),
-
-            const SizedBox(height: 24),
-
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  // Xử lý mua hàng
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (_) => CheckoutScreen(
-                            product: widget.product,
-                            attributes: [
-                              WatchAttribute(
-                                attributeId: 1,
-                                name: 'bandLength',
-                                dataType: 'double',
-                                quantity: 50,
-                              ),
-                              WatchAttribute(
-                                attributeId: 2,
-                                name: 'thickness',
-                                dataType: 'double',
-                                quantity: 50,
+                  Stack(
+                    children: [
+                      Center(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 10,
+                                offset: Offset(0, 5),
                               ),
                             ],
                           ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Image.network(
+                              widget.product.imageUrl,
+                              height: 250,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 12,
+                        right: 12,
+                        child: IconButton(
+                          icon: Icon(
+                            isFavorite ? Icons.favorite : Icons.favorite_border,
+                            color: isFavorite ? Colors.pink : Colors.grey,
+                            size: 30,
+                          ),
+                          onPressed: _toggleFavorite,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  if (widget.thumbnails.isNotEmpty)
+                    SizedBox(
+                      height: 80,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: widget.thumbnails.length,
+                        itemBuilder: (context, index) {
+                          return Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 6),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey.shade300),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.network(
+                                widget.thumbnails[index].imageUrl,
+                                width: 80,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red.shade400,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 12,
+
+                  const SizedBox(height: 20),
+
+                  Text(
+                    widget.product.name,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+
+                  const SizedBox(height: 8),
+
+                  Text(
+                    widget.product.description,
+                    style: const TextStyle(fontSize: 16, color: Colors.black87),
                   ),
-                ),
-                child: const Text("Mua ngay", style: TextStyle(fontSize: 16)),
+
+                  const SizedBox(height: 16),
+
+                  Text(
+                    "\$${widget.product.price.toStringAsFixed(2)}",
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red,
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  if (mainAttributes.isNotEmpty)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Thông số kỹ thuật",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        ...mainAttributes.map(
+                          (attr) => Padding(
+                            padding: const EdgeInsets.only(bottom: 4.0),
+                            child: Text(
+                              "- $attr",
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 10,
+                  offset: Offset(0, -2),
+                ),
+              ],
+            ),
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (_) => CheckoutScreen(
+                          product: widget.product,
+                          attributes: [
+                            WatchAttribute(
+                              attributeId: 1,
+                              name: 'bandLength',
+                              dataType: 'double',
+                              quantity: 50,
+                            ),
+                            WatchAttribute(
+                              attributeId: 2,
+                              name: 'thickness',
+                              dataType: 'double',
+                              quantity: 50,
+                            ),
+                          ],
+                        ),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade400,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 14,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+              ),
+              child: const Text("Mua ngay", style: TextStyle(fontSize: 18)),
+            ),
+          ),
+        ],
       ),
     );
   }
