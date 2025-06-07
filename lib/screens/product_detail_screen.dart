@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:watchstore/Utils/favorite_manager.dart';
 import 'package:watchstore/controllers/auth_controller.dart';
+import 'package:watchstore/controllers/order_controller.dart';
 import 'package:watchstore/models/data/product.dart';
 import 'package:watchstore/models/data/thumbnail.dart';
 import 'package:watchstore/models/data/product_attribute_value.dart';
@@ -61,24 +62,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final mainAttributes =
-        widget.attributes.map((attr) {
-          final value = widget.attributeValues.firstWhere(
-            (val) => val.attributeId == attr.attributeId,
-            orElse: () {
-              final safeProductId = widget.product.id ?? -1;
-              final safeAttrId = attr.attributeId ?? -1;
-              return ProductAttributeValue(
-                productId: safeProductId,
-                attributeId: safeAttrId,
-                value: "N/A",
-              );
-            },
-          );
-          final attrName = attr.name ?? "Thuộc tính không rõ";
-          return "$attrName: ${value.value}";
-        }).toList();
-
+    // final mainAttributes =
+    //     widget.attributes.map((attr) {
+    //       final value = widget.attributeValues.firstWhere(
+    //         (val) => val.attributeId == attr.attributeId,
+    //         orElse: () {
+    //           final safeProductId = widget.product.id ?? -1;
+    //           final safeAttrId = attr.attributeId ?? -1;
+    //           return ProductAttributeValue(
+    //             productId: safeProductId,
+    //             attributeId: safeAttrId,
+    //             value: "N/A",
+    //           );
+    //         },
+    //       );
+    //       final attrName = attr.name ?? "Thuộc tính không rõ";
+    //       return "$attrName: ${value.value}";
+    //     }).toList();
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
@@ -201,29 +201,29 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                   const SizedBox(height: 20),
 
-                  if (mainAttributes.isNotEmpty)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Thông số kỹ thuật",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        ...mainAttributes.map(
-                          (attr) => Padding(
-                            padding: const EdgeInsets.only(bottom: 4.0),
-                            child: Text(
-                              "- $attr",
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                  // if (mainAttributes.isNotEmpty)
+                  //   Column(
+                  //     crossAxisAlignment: CrossAxisAlignment.start,
+                  //     children: [
+                  //       const Text(
+                  //         "Thông số kỹ thuật",
+                  //         style: TextStyle(
+                  //           fontSize: 18,
+                  //           fontWeight: FontWeight.w600,
+                  //         ),
+                  //       ),
+                  //       const SizedBox(height: 10),
+                  //       ...mainAttributes.map(
+                  //         (attr) => Padding(
+                  //           padding: const EdgeInsets.only(bottom: 4.0),
+                  //           child: Text(
+                  //             "- $attr",
+                  //             style: const TextStyle(fontSize: 14),
+                  //           ),
+                  //         ),
+                  //       ),
+                  //     ],
+                  //   ),
                 ],
               ),
             ),
@@ -247,22 +247,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   context,
                   MaterialPageRoute(
                     builder:
-                        (_) => CheckoutScreen(
-                          product: widget.product,
-                          attributes: [
-                            WatchAttribute(
-                              attributeId: 1,
-                              name: 'bandLength',
-                              dataType: 'double',
-                              quantity: 50,
-                            ),
-                            WatchAttribute(
-                              attributeId: 2,
-                              name: 'thickness',
-                              dataType: 'double',
-                              quantity: 50,
-                            ),
-                          ],
+                        (_) => ChangeNotifierProvider(
+                          create: (_) => OrderController(),
+                          child: CheckoutScreen(
+                            product: widget.product,
+                            attributes: widget.attributes,
+                          ),
                         ),
                   ),
                 );
@@ -277,7 +267,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   borderRadius: BorderRadius.circular(25),
                 ),
               ),
-              child: const Text("Mua ngay", style: TextStyle(fontSize: 18)),
+              child: const Text("Mua ngay", style: TextStyle(fontSize: 18, color: Colors.white)),
             ),
           ),
         ],

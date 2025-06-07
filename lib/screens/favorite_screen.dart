@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:watchstore/controllers/product_controller.dart';
 import 'package:watchstore/models/data/product.dart';
 import 'package:watchstore/Utils/favorite_manager.dart';
 import 'package:watchstore/screens/product_detail_screen.dart';
@@ -21,6 +23,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final _productController = Provider.of<ProductController>(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sản phẩm yêu thích'),
@@ -57,15 +60,18 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
               itemBuilder: (context, index) {
                 final product = favorites[index];
                 return GestureDetector(
-                  onTap: () {
+                  onTap: () async {
+                    var thumbnail = await _productController.getThumbnail(product.id!);
+                    var watchAttribute = await _productController.getWatchAttribute(product.id!);
+                    var attrValue = await _productController.getAllAttributeValues(product.id!);
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => ProductDetailScreen(
                           product: product,
-                          thumbnails: const [],
-                          attributeValues: const [],
-                          attributes: const [],
+                          thumbnails: thumbnail,
+                          attributeValues: attrValue ?? [],
+                          attributes: watchAttribute ?? [],
                         ),
                       ),
                     );

@@ -14,6 +14,10 @@ class AuthController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setCustomerInfo(Customer value) {
+    customerInfo = value;
+    notifyListeners();
+  }
   Future<Customer?> loginUser(String username, String password) async {
     _db = await DatabaseHelper.database;
     var result = await _db.rawQuery(
@@ -32,7 +36,11 @@ class AuthController extends ChangeNotifier {
     Customer customer,
   ) async {
     _db = await DatabaseHelper.database;
-
+    final isExistAccount = await _db.rawQuery('select * from Account where username = ?', [username]);
+    if(isExistAccount.isNotEmpty) {
+      return 'Tài khoản đã tồn tại';
+    }
+    
     try {
       await _db.transaction((txn) async {
         // Insert Customer

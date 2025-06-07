@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:watchstore/controllers/auth_controller.dart';
+import 'package:watchstore/screens/home_screen.dart';
 import 'package:watchstore/screens/login_screen.dart';
 
 class StartApp extends StatelessWidget {
@@ -52,10 +53,7 @@ class StartApp extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder:
-                            (_) => ChangeNotifierProvider(
-                              create: (_) => AuthController(),
-                              child: LoginScreen(),
-                          ),
+                            (_) => LoginScreen()
                       ),
                     );
                   },

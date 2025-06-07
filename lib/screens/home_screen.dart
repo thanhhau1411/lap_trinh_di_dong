@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:watchstore/controllers/auth_controller.dart';
 import 'package:watchstore/controllers/brand_controller.dart';
+import 'package:watchstore/controllers/customer_controller.dart';
 import 'package:watchstore/controllers/product_controller.dart';
 import 'package:watchstore/models/data/brand.dart';
 import 'package:watchstore/models/data/product.dart';
@@ -9,6 +10,7 @@ import 'package:watchstore/models/data/product_attribute_value.dart';
 import 'package:watchstore/models/data/thumbnail.dart';
 import 'package:watchstore/models/data/watch_attribute.dart';
 import 'package:watchstore/screens/product_detail_screen.dart';
+import 'package:watchstore/screens/search_screen.dart';
 import 'package:watchstore/wiget/drawer_header.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -21,7 +23,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final _brandController = BrandController();
-  final _productController = ProductController();
+  late ProductController _productController;
   int selectedBrandId = 1;
 
   List<Brand> brands = [];
@@ -38,6 +40,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       vsync: this,
     );
     _animationController.forward();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _productController = Provider.of<ProductController>(context);
     loadBrands();
     loadProducts();
   }
@@ -64,6 +72,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    // Provider.of<CustomerController>(context);
+    final authController = context.watch<AuthController>();
     final filteredProducts =
         allProducts
             .where((product) => product.brandId == selectedBrandId)
@@ -72,7 +82,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: Colors.grey[100],
-      drawer: Drawer(child: buildDrawerHeader(context, context.read<AuthController>().customerInfo)),
+      drawer: Drawer(
+        child: buildDrawerHeader(context, authController.customerInfo),
+      ),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,35 +93,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
                     icon: Icon(Icons.menu),
                     onPressed: () => _scaffoldKey.currentState?.openDrawer(),
                   ),
                   const SizedBox(width: 10),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: TextField(
-                        decoration: InputDecoration(
-                          icon: IconButton(
-                            icon: Icon(Icons.search),
-                            color: Colors.grey,
-                            onPressed: () {},
-                          ),
-                          hintText: "Find Your Watch",
-                          hintStyle: const TextStyle(color: Colors.grey),
-                          border: InputBorder.none,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  // const Icon(Icons.notifications_none),
+                  IconButton(
+                      icon: Icon(Icons.search),
+                      color: Colors.grey,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => SearchScreen()),
+                        );
+                      },
+                    )
                 ],
               ),
             ),
@@ -286,17 +286,22 @@ class ProductCard extends StatelessWidget {
                       onPressed: () async {
                         final productId = product.id;
                         if (productId == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("product id null")));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("product id null")),
+                          );
                           return;
                         }
-
+                        final thumbnails = await _productController
+                            .getThumbnail(product.id!);
                         final watchAttribute =
                             await _productController.getWatchAttribute(
                               productId,
                             ) ??
                             [];
-                        if(watchAttribute.isEmpty) {
-                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("watchAttribute is empty")));
+                        if (watchAttribute.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("watchAttribute is empty")),
+                          );
                         }
                         final futures =
                             watchAttribute.map((attr) {
@@ -309,8 +314,10 @@ class ProductCard extends StatelessWidget {
                             }).toList();
 
                         final attributeValues = await Future.wait(futures);
-                         if(attributeValues.isEmpty) {
-                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("attributeValues is empty")));
+                        if (attributeValues.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("attributeValues is empty")),
+                          );
                         }
                         Navigator.push(
                           context,
@@ -318,18 +325,7 @@ class ProductCard extends StatelessWidget {
                             builder:
                                 (context) => ProductDetailScreen(
                                   product: product,
-                                  thumbnails: [
-                                    Thumbnail(
-                                      id: 1,
-                                      productId: productId,
-                                      imageUrl: 'assets/images/mock1.jpg',
-                                    ),
-                                    Thumbnail(
-                                      id: 2,
-                                      productId: productId,
-                                      imageUrl: 'assets/images/mock2.jpg',
-                                    ),
-                                  ],
+                                  thumbnails: thumbnails,
                                   attributeValues:
                                       attributeValues
                                           .whereType<ProductAttributeValue>()

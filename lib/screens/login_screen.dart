@@ -148,10 +148,7 @@ class _LoginPageState extends State<LoginScreen> {
                         context,
                         MaterialPageRoute(
                           builder:
-                              (_) => ChangeNotifierProvider(
-                                create: (_) => AuthController(),
-                                child: SignupPage(),
-                              ),
+                              (_) => SignupPage(),
                         ),
                       );
                     },

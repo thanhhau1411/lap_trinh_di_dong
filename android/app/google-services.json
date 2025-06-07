@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "162069967907",
+    "project_id": "laptrinhdidongcuoikyv2-8133a",
+    "storage_bucket": "laptrinhdidongcuoikyv2-8133a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:162069967907:android:4d6cd2c0fd61b0a04b6d96",
+        "android_client_info": {
+          "package_name": "com.example.watchstore"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQ83Uold36mSOR5XdRWcujJpOb75PIw1g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

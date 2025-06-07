@@ -3,6 +3,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:watchstore/models/data/database_helper.dart';
 import 'package:watchstore/models/data/product_attribute_value.dart';
+import 'package:watchstore/models/data/thumbnail.dart';
 import 'package:watchstore/models/data/watch_attribute.dart';
 import '../models/data/product.dart';
 
@@ -150,7 +151,7 @@ class ProductController extends ChangeNotifier {
   Future<List<WatchAttribute>?> getWatchAttribute(int productId) async {
     final db = await DatabaseHelper.database;
     final result = await db.rawQuery(
-      '''  select  wa.name, wa.dataType, wa.quantity
+      '''  select  wa.attributeId, wa.name, wa.dataType, wa.quantity
                      from Product p 
                      join ProductAttributeValue pav on pav.productId = p.id
                      join WatchAttribute wa on wa.attributeId = pav.attributeId
@@ -186,5 +187,36 @@ class ProductController extends ChangeNotifier {
     } else {
       return null;
     }
+  }
+
+  Future<List<ProductAttributeValue>?> getAllAttributeValues(int productId) async {
+    final db = await DatabaseHelper.database;
+    final result = await db.rawQuery(
+      '''
+    SELECT pav.id, pav.productId, pav.attributeId, pav.value
+    FROM Product p 
+    JOIN ProductAttributeValue pav ON pav.productId = p.id
+    JOIN WatchAttribute wa ON wa.attributeId = pav.attributeId
+    WHERE p.id = ?
+    ''',
+      [productId],
+    );
+
+     if (result.isNotEmpty) {
+      return result.map((map) => ProductAttributeValue.fromMap(map)).toList();
+    } else {
+      return null;
+    }
+  }
+  
+  Future<List<Thumbnail>> getThumbnail(int productId) async {
+      final db = await DatabaseHelper.database;
+      var result = await db.query('Thumbnail', where: 'productId = ?', whereArgs: [productId]);
+      if(result.isNotEmpty) {
+        return result.map((map) => Thumbnail.fromMap(map)).toList();
+      }
+      else {
+        return [];
+      }
   }
 }

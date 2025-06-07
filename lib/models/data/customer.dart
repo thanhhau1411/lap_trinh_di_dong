@@ -4,12 +4,14 @@ class Customer {
   late String? email;
   late String phoneNumer;
   late String address;
+  String? imageUrl;
   Customer({
     this.id,
     required this.fullName,
     this.email,
     required this.phoneNumer,
-    required this.address
+    required this.address,
+    this.imageUrl
   });
 
   Map<String, dynamic> toMap() {
@@ -18,7 +20,8 @@ class Customer {
       'fullName': fullName,
       'email': email,
       'phoneNumer': phoneNumer,
-      'address': address
+      'address': address,
+      'imageUrl': imageUrl
     };
   }
 
@@ -28,7 +31,8 @@ class Customer {
       fullName: map['fullName'],
       email: map['email'],
       phoneNumer: map['phoneNumer'],
-      address: map['address']
+      address: map['address'],
+      imageUrl: map['imageUrl']
     );
   }
 }

@@ -144,7 +144,12 @@ class _SignupPageState extends State<SignupPage> {
                               var error = await _authController.registerUser(
                                 _emailController.text,
                                 _passwordController.text,
-                                Customer(fullName: _nameController.text,email: _emailController.text, phoneNumer: _phoneController.text, address: '123')
+                                Customer(
+                                  fullName: _nameController.text,
+                                  email: _emailController.text,
+                                  phoneNumer: _phoneController.text,
+                                  address: '123',
+                                ),
                               );
                               // SignUp throw exeption
                               if (error != null) {
@@ -155,11 +160,7 @@ class _SignupPageState extends State<SignupPage> {
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                    builder:
-                                        (_) => ChangeNotifierProvider(
-                                          create: (_) => AuthController(),
-                                          child: LoginScreen(),
-                                        ),
+                                    builder: (_) => LoginScreen(),
                                   ),
                                 );
                               }
@@ -172,10 +173,13 @@ class _SignupPageState extends State<SignupPage> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  child: _authController.isLoading ? CircularProgressIndicator(color: Colors.white) : Text(
-                    "Sign Up",
-                    style: TextStyle(fontSize: 16, color: Colors.white),
-                  ),
+                  child:
+                      _authController.isLoading
+                          ? CircularProgressIndicator(color: Colors.white)
+                          : Text(
+                            "Sign Up",
+                            style: TextStyle(fontSize: 16, color: Colors.white),
+                          ),
                 ),
                 const SizedBox(height: 20),
                 Center(
