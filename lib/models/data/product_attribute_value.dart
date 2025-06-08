@@ -1,5 +1,5 @@
 class ProductAttributeValue {
-  late int? id;
+  int? id;
   int productId;
   int attributeId;
   Object value;

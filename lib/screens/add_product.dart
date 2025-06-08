@@ -37,7 +37,7 @@ class _AddProductPageState extends State<AddProductPage> {
   Future<void> _loadBrands() async {
     try {
       final dbHelper = DatabaseHelper();
-      final brandMaps = await dbHelper.getBrandsRaw();
+      final brandMaps = await DatabaseHelper.getBrandsRaw();
 
       final brands = brandMaps.map((e) => Brand.fromMap(e)).toList();
 

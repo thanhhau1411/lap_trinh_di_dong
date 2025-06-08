@@ -4,6 +4,7 @@ class Order {
   final DateTime deliveryDate;
   final String? status;
   final int customerId;
+  double? totalPrice;
 
   Order({
     this.id,
@@ -11,6 +12,7 @@ class Order {
     required this.deliveryDate,
     this.status,
     required this.customerId,
+    this.totalPrice
   });
 
   Map<String, dynamic> toMap() {
@@ -20,6 +22,7 @@ class Order {
       'deliveryDate': deliveryDate.toIso8601String(),
       'status': status,
       'customerId': customerId,
+      'totalPrice': totalPrice
     };
   }
 
@@ -30,6 +33,7 @@ class Order {
       deliveryDate: DateTime.parse(map['deliveryDate']),
       status: map['status'],
       customerId: map['customerId'],
+      totalPrice: map['totalPrice']
     );
   }
 }

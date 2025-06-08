@@ -1,46 +1,29 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:watchstore/controllers/auth_controller.dart';
+import 'package:watchstore/controllers/customer_controller.dart';
+import 'package:watchstore/firebase_options.dart';
 import 'package:watchstore/models/data/database_helper.dart';
-import 'package:watchstore/screens/admin_home.dart';
+import 'package:watchstore/screens/startapp_screen.dart';
+import 'controllers/product_controller.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(AppInitializer());
-}
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await DatabaseHelper.deleteDatabaseFile();
 
-class AppInitializer extends StatefulWidget {
-  @override
-  _AppInitializerState createState() => _AppInitializerState();
-}
-
-class _AppInitializerState extends State<AppInitializer> {
-  bool _isDbReady = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _initDatabase();
-  }
-
-  Future<void> _initDatabase() async {
-    // Xoá database
-    // await DatabaseHelper().deleteAppDatabase();
-    await DatabaseHelper().database;
-    setState(() {
-      _isDbReady = true;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!_isDbReady) {
-      // Hiển thị loading khi DB chưa khởi tạo xong
-      return MaterialApp(
-        home: Scaffold(body: Center(child: CircularProgressIndicator())),
-      );
-    }
-    // DB đã sẵn sàng, chạy app chính
-    return MyApp();
-  }
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ProductController()),
+        ChangeNotifierProvider(create: (_) => AuthController()),
+        ChangeNotifierProvider(create: (_) => CustomerController())
+        // Thêm các Provider khác tại đây nếu có
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -49,8 +32,13 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Admin Watch Store',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: AdminDashboardScreen(),
+      home: StartApp(),
       debugShowCheckedModeBanner: false,
+      // initialRoute: '/',
+      // routes: {
+      //   '/': (context) => HomeScreen(),
+      //   '/productDetail': (context) => ProductDetailScreen(),
+      // },
     );
   }
 }

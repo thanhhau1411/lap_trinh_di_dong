@@ -49,7 +49,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
       // brandId không sửa ở đây (nếu muốn sửa thì bổ sung)
     };
 
-    final db = await dbHelper.database;
+    final db = await DatabaseHelper.database;
     await db.update(
       'Product',
       updatedProduct,
