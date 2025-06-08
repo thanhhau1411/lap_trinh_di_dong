@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:watchstore/controllers/auth_controller.dart';
@@ -101,15 +103,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                   const SizedBox(width: 10),
                   IconButton(
-                      icon: Icon(Icons.search),
-                      color: Colors.grey,
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => SearchScreen()),
-                        );
-                      },
-                    )
+                    icon: Icon(Icons.search),
+                    color: Colors.grey,
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => SearchScreen()),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -181,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     crossAxisCount: 2,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 16,
-                    childAspectRatio: 0.68,
+                    childAspectRatio: 0.75,
                   ),
                   itemBuilder: (context, index) {
                     final product = filteredProducts[index];
@@ -194,7 +196,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           curve: Curves.easeOutBack,
                         ),
                       ),
-                      child: ProductCard(product: product),
+                      child: IntrinsicHeight(
+                        child: ProductCard(product: product),
+                      ),
                     );
                   },
                 ),
@@ -230,135 +234,160 @@ class ProductCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image
+          // Image - Fixed height
           Container(
-            height: 120,
+            height: 100, // Giảm chiều cao image
             width: double.infinity,
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(14),
               image: DecorationImage(
-                image: NetworkImage(product.imageUrl),
+                image:
+                    (product.imageUrl.startsWith('http'))
+                        ? NetworkImage(product.imageUrl)
+                        : FileImage(File(product.imageUrl)),
                 fit: BoxFit.contain,
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            child: Text(
-              product.name,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                height: 1.2,
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Text(
-              product.description,
-              style: const TextStyle(color: Colors.black54, fontSize: 13),
-            ),
-          ),
-          const Spacer(),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Text(
-                    '\$${product.price.toStringAsFixed(0)}',
+
+          // Product info section
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Product name
+                  Text(
+                    product.name,
                     style: const TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14, // Giảm font size
+                      height: 1.2,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  // Description
+                  Text(
+                    product.description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.black54,
+                      fontSize: 12, // Giảm font size
+                      height: 1.3,
                     ),
                   ),
-                ),
-                Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        final productId = product.id;
-                        if (productId == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("product id null")),
-                          );
-                          return;
-                        }
-                        final thumbnails = await _productController
-                            .getThumbnail(product.id!);
-                        final watchAttribute =
-                            await _productController.getWatchAttribute(
-                              productId,
-                            ) ??
-                            [];
-                        if (watchAttribute.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("watchAttribute is empty")),
-                          );
-                        }
-                        final futures =
-                            watchAttribute.map((attr) {
-                              final attrId = attr.attributeId;
-                              if (attrId == null) return Future.value(null);
-                              return _productController.getAttributeValue(
-                                productId,
-                                attrId,
+
+                  const Spacer(),
+
+                  // Price and Button row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Price
+                      Text(
+                        '\$${product.price.toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                        ),
+                      ),
+
+                      // Button
+                      SizedBox(
+                        height: 28,
+                        width: 65,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            final productId = product.id;
+                            if (productId == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("product id null")),
                               );
-                            }).toList();
-
-                        final attributeValues = await Future.wait(futures);
-                        if (attributeValues.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("attributeValues is empty")),
-                          );
-                        }
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => ProductDetailScreen(
-                                  product: product,
-                                  thumbnails: thumbnails,
-                                  attributeValues:
-                                      attributeValues
-                                          .whereType<ProductAttributeValue>()
-                                          .toList(),
-                                  attributes: watchAttribute,
+                              return;
+                            }
+                            final thumbnails = await _productController
+                                .getThumbnail(product.id!);
+                            final watchAttribute =
+                                await _productController.getWatchAttribute(
+                                  productId,
+                                ) ??
+                                [];
+                            if (watchAttribute.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("watchAttribute is empty"),
                                 ),
+                              );
+                            }
+                            final futures =
+                                watchAttribute.map((attr) {
+                                  final attrId = attr.attributeId;
+                                  if (attrId == null) return Future.value(null);
+                                  return _productController.getAttributeValue(
+                                    productId,
+                                    attrId,
+                                  );
+                                }).toList();
+                            final attributeValues = await Future.wait(futures);
+                            if (attributeValues.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("attributeValues is empty"),
+                                ),
+                              );
+                            }
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => ProductDetailScreen(
+                                      product: product,
+                                      thumbnails: thumbnails,
+                                      attributeValues:
+                                          attributeValues
+                                              .whereType<
+                                                ProductAttributeValue
+                                              >()
+                                              .toList(),
+                                      attributes: watchAttribute,
+                                    ),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red.shade400,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            padding: EdgeInsets.zero,
+                            elevation: 2,
                           ),
-                        );
-                      },
-
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade400,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        elevation: 2,
-                      ),
-                      child: const Text(
-                        'Xem chi tiết',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
+                          child: const Text(
+                            'Chi tiết',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ),
-              ],
+
+                  const SizedBox(height: 8), // Bottom spacing
+                ],
+              ),
             ),
           ),
         ],
