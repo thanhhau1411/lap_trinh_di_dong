@@ -8,6 +8,7 @@ import 'package:watchstore/models/data/order_detail.dart';
 import 'package:watchstore/models/data/product.dart';
 import 'package:watchstore/models/data/product_attribute_value.dart';
 import 'package:watchstore/models/data/watch_attribute.dart';
+import 'package:watchstore/screens/home_screen.dart';
 import 'package:watchstore/screens/order_history_screen.dart';
 
 class OrderResultScreen extends StatefulWidget {
@@ -480,7 +481,7 @@ class _OrderResultScreenState extends State<OrderResultScreen>
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: () {
-                Navigator.popUntil(context, (route) => route.isFirst);
+                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => HomeScreen()), (r) => false);
               },
               icon: const Icon(Icons.home),
               label: const Text("Về trang chủ"),
